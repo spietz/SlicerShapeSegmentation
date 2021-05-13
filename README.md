@@ -7,12 +7,12 @@ The underlying algorithm uses graph partitioning based on the "shape diameter fu
 
 ## Installation
 
-The extension have not been packaged yet, so compile manually using cmake, which requires a [superbuild of Slicer](https://www.slicer.org/wiki/Documentation/4.0/Developers/Build_Instructions). Remember to change the path in the step-by-step instructions below. It further depends on CGAL which must be installed and available for cmake.
+The extension have not been packaged yet, so compile manually using cmake, which requires a [superbuild of Slicer](https://www.slicer.org/wiki/Documentation/4.0/Developers/Build_Instructions). Remember to change the Slicer path in the instructions below. It further depends on CGAL which must be installed and available for cmake.
 
 ```
-git clone https://github.com/spietz/ShapeSegmentation.git
-mkdir ShapeSegmentation/build
-cd ShapeSegmentation/build
+git clone https://github.com/spietz/SlicerShapeSegmentation.git
+mkdir SlicerShapeSegmentation/build
+cd SlicerShapeSegmentation/build
 cmake DSlicer_DIR:PATH=/home/user/Slicer-SuperBuild-Debug/Slicer-build -DCMAKE_BUILD_TYPE=Release ..
 make
 ```
