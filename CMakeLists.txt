@@ -7,13 +7,9 @@ project(SurfSegmentCLI)
 set(EXTENSION_HOMEPAGE "https://github.com/spietz/ShapeSegmentation")
 set(EXTENSION_CATEGORY "Surface Models")
 set(EXTENSION_CONTRIBUTORS "Henrik Spietz")
-set(EXTENSION_DESCRIPTION "Graph based segmentation of shapes using
-the 'shape diameter function' and CGAL. For details see 
-https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html and
-Shapira et. al (2008): 'Consistent mesh partitioning and skeletonisation using
-the shape diameter function'")
-set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/SurfSegmentCLI.png")
-set(EXTENSION_SCREENSHOTURLS "http://www.example.com/Slicer/Extensions/SurfSegmentCLI/Screenshots/1.png")
+set(EXTENSION_DESCRIPTION "Graph based segmentation of shapes using the 'shape diameter function' and CGAL. For details see https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html and references therein.")
+set(EXTENSION_ICONURL "https://github.com/spietz/ShapeSegmentation/ShapeSegmentation.png")
+set(EXTENSION_SCREENSHOTURLS "https://github.com/spietz/ShapeSegmentation/ShapeSegmentation.png/Screenshots/hand.png")
 set(EXTENSION_DEPENDS "NA") # Specified as a list or "NA" if no dependencies
 
 #-----------------------------------------------------------------------------
