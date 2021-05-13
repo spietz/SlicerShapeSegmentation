@@ -19,7 +19,7 @@ Once compiled add it to Slicer by browsing to the directory of 'ShapeSegmentatio
 
 
 ## References
-* [CGAL documentation on surface segmentation](https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html)
+* [CGAL documentation on surface segmentation](https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html) and references therein.
 * Shapira, Lior, et al. "Consistent Mesh Partitioning and Skeletonisation Using the Shape Diameter Function." Visual Computer, vol. 24, no. 4, Springer-Verlag, 2008.
 
 ## TODO
