@@ -1,55 +1,31 @@
-# Created by the script cgal_create_CMakeLists
-# This is the CMake script for compiling a set of CGAL applications.
+cmake_minimum_required(VERSION 3.13.4)
 
-project( shape_segmentation )
+project(SurfSegmentCLI)
 
+#-----------------------------------------------------------------------------
+# Extension meta-information
+set(EXTENSION_HOMEPAGE "https://github.com/spietz/ShapeSegmentation")
+set(EXTENSION_CATEGORY "Surface Models")
+set(EXTENSION_CONTRIBUTORS "Henrik Spietz")
+set(EXTENSION_DESCRIPTION "Graph based segmentation of shapes using
+the 'shape diameter function' and CGAL. For details see 
+https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html and
+Shapira et. al (2008): 'Consistent mesh partitioning and skeletonisation using
+the shape diameter function'")
+set(EXTENSION_ICONURL "http://www.example.com/Slicer/Extensions/SurfSegmentCLI.png")
+set(EXTENSION_SCREENSHOTURLS "http://www.example.com/Slicer/Extensions/SurfSegmentCLI/Screenshots/1.png")
+set(EXTENSION_DEPENDS "NA") # Specified as a list or "NA" if no dependencies
 
-cmake_minimum_required(VERSION 2.8.11)
+#-----------------------------------------------------------------------------
+# Extension dependencies
+find_package(Slicer REQUIRED)
+include(${Slicer_USE_FILE})
 
-# CGAL and its components
-find_package( CGAL QUIET COMPONENTS  )
+#-----------------------------------------------------------------------------
+# Extension modules
+add_subdirectory(Segmenter)
+## NEXT_MODULE
 
-if ( NOT CGAL_FOUND )
-
-  message(STATUS "This project requires the CGAL library, and will not be compiled.")
-  return()  
-
-endif()
-
-# include helper file
-include( ${CGAL_USE_FILE} )
-
-
-# Boost and its components
-find_package( Boost REQUIRED )
-
-if ( NOT Boost_FOUND )
-
-  message(STATUS "This project requires the Boost library, and will not be compiled.")
-
-  return()  
-
-endif()
-
-# VTK
-find_package(VTK REQUIRED)
-
-if ( NOT VTK_FOUND )
-
-  message(STATUS "This project requires the VTK library, and will not be compiled.")
-
-  return()  
-
-endif()
-
-# include helper file
-include(${VTK_USE_FILE})
-message(STATUS ${VTK_MAJOR_VERSION})  # remember to put vtk-library dir in LD_LIBRARY_PATH for this cmake crap to work
-
-# include for local package
-
-add_executable(my_program segmentation.cpp)
-target_link_libraries(my_program CGAL::CGAL ${VTK_LIBRARIES})
-
-
-
+#-----------------------------------------------------------------------------
+include(${Slicer_EXTENSION_GENERATE_CONFIG})
+include(${Slicer_EXTENSION_CPACK})

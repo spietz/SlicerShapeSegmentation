@@ -1,5 +1,8 @@
+#include "SegmenterCLP.h"
+
 #include <iostream>
 
+// CGAL includes
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_mesh_processing/measure.h>
 #include <CGAL/Surface_mesh.h>
@@ -8,6 +11,7 @@
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/mesh_segmentation.h>
 
+// vtk includes
 #include <vtkCell.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
@@ -23,10 +27,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedIntArray.h>
 
+// MRML includes
+#include "vtkMRMLModelNode.h"
+#include "vtkMRMLModelStorageNode.h"
 
-// Legacy vtk mesh to polygon mesh 
+
+// vtkMRMLModelNode to polygon mesh 
 template <typename TM>
-bool pmesh_from_vtk(std::string filename, TM &tmesh)
+int pmesh_from_vtkMRMLModelNode(std::string filename, TM &tmesh)
 {
   
   typedef typename boost::property_map<TM, CGAL::vertex_point_t>::type VPMap;
@@ -34,13 +42,18 @@ bool pmesh_from_vtk(std::string filename, TM &tmesh)
   typedef typename boost::graph_traits<TM>::vertex_descriptor vertex_descriptor;
 
   VPMap vpmap = get(CGAL::vertex_point, tmesh);
+  
 
-  // Read polydata
-  vtkSmartPointer<vtkPolyDataReader> reader =
-    vtkSmartPointer<vtkPolyDataReader>::New();
-  reader->SetFileName(filename.c_str());
-  reader->Update();
-  vtkSmartPointer<vtkPolyData> polydata = reader->GetOutput();
+  // read the polydata from slicer model
+  vtkNew<vtkMRMLModelStorageNode> modelStorageNode;
+  vtkNew<vtkMRMLModelNode> modelNode;
+  modelStorageNode->SetFileName(filename.c_str());
+  if (!modelStorageNode->ReadData(modelNode))
+    {
+      std::cerr << "Failed to read input model" << std::endl;
+      return EXIT_FAILURE;
+    }
+  vtkSmartPointer<vtkPolyData> polydata = modelNode->GetPolyData();
 
   // get nb of points and cells
   vtkIdType nb_points = polydata->GetNumberOfPoints();
@@ -76,13 +89,17 @@ bool pmesh_from_vtk(std::string filename, TM &tmesh)
 
       CGAL::Euler::add_face(vr, tmesh);
     }
-  return true;
+
+  return EXIT_SUCCESS;
+
 }
 
 
-int main(int argc, char** argv )
+int main( int argc, char * argv[] )
 {
-
+  
+  PARSE_ARGS;
+  
   typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
   typedef CGAL::Surface_mesh<Kernel::Point_3> SM;
 
@@ -91,29 +108,10 @@ int main(int argc, char** argv )
   typedef boost::graph_traits<SM>::halfedge_descriptor halfedge_descriptor;
   
   SM mesh;
-  size_t num_clusters = 5;
-  double smoothing_lambda = 0.26;
-  if (argc>=2){
-
-    // Get filename
-    std::string filename = argv[1];
-    std::cout << "Processing:" << filename << std::endl;
     
-    // Convert to GCAL mesh
-    pmesh_from_vtk(filename, mesh); // TODO: safe downcast
-
-    // reader->Delete(); Segmentation fault, data possibly not copied..
-                                                
-  } else {
-    std::cout << "No filename given!" << std::endl;
-    return 1;
-  }
-  if (argc>=3){
-    num_clusters = atoi(argv[2]);
-  }
-  if (argc>=4){
-    smoothing_lambda = atof(argv[3]);
-  }
+  // Convert to GCAL mesh
+  pmesh_from_vtkMRMLModelNode(inputModel, mesh); // TODO: safe downcast
+  
   typedef SM::Property_map<face_descriptor,double> Facet_double_map;
   Facet_double_map sdf_property_map;
 
@@ -125,20 +123,21 @@ int main(int argc, char** argv )
   // Create a property-map for segment-ids
   typedef SM::Property_map<face_descriptor, std::size_t> Facet_int_map;
   Facet_int_map segment_property_map =
-  mesh.add_property_map<face_descriptor,std::size_t>("f:sid").first;
+    mesh.add_property_map<face_descriptor,std::size_t>("f:sid").first;
 
   // Segment the mesh: Any other scalar values can be used instead of
   // using SDF values computed using the CGAL function.
   std::cout << "Segmenting mesh for clusters=" << num_clusters
             << ",lambda=" << smoothing_lambda << std::endl;
-  std::size_t number_of_segments =
+  std::size_t num_segments =
     CGAL::segmentation_from_sdf_values(mesh, sdf_property_map,
-                                       segment_property_map,num_clusters,
+                                       segment_property_map,
+                                       (std::size_t)num_clusters,
                                        smoothing_lambda);
+  std::cout << "Resulting in number of segments:"
+            << num_segments << std::endl;
 
   // Export to vtk
-  {
-
   typedef typename boost::property_map<SM, CGAL::vertex_point_t>::const_type VPMap;
   typedef typename boost::property_map_value<SM, CGAL::vertex_point_t>::type Point_3;
   VPMap vpmap = get(CGAL::vertex_point, mesh);
@@ -153,7 +152,7 @@ int main(int argc, char** argv )
   vtkSmartPointer<vtkDoubleArray> scalars =
     vtkSmartPointer<vtkDoubleArray>::New();
   scalars->SetNumberOfComponents(1);
-  scalars->SetName("sdf");
+  scalars->SetName("SDF");
 
   vtkSmartPointer<vtkUnsignedIntArray> segIds =
     vtkSmartPointer<vtkUnsignedIntArray>::New();
@@ -167,8 +166,8 @@ int main(int argc, char** argv )
     {
       const Point_3& p = get(vpmap, v);
       points->InsertNextPoint(CGAL::to_double(p.x()),
-                                  CGAL::to_double(p.y()),
-                                  CGAL::to_double(p.z()));
+                              CGAL::to_double(p.y()),
+                              CGAL::to_double(p.z()));
       Vids[v] = inum++;
     }
   for(face_descriptor f : faces(mesh))
@@ -193,16 +192,20 @@ int main(int argc, char** argv )
     vtkSmartPointer<vtkPolyData>::New();
   polydata->SetPoints(points);
   polydata->SetPolys(cells);
-  polydata->GetCellData()->SetScalars(scalars);
-  polydata->GetCellData()->SetScalars(segIds);
-
-  // Write the data
-  vtkSmartPointer<vtkPolyDataWriter> writer =
-    vtkSmartPointer<vtkPolyDataWriter>::New();
-  writer->SetFileName("Segmented.vtk");
-  writer->SetInputData(polydata);
-  writer->Write();
-    
-  }
-
+  polydata->GetCellData()->AddArray(scalars);
+  polydata->GetCellData()->AddArray(segIds);
+  
+  // Create slicer output model
+  vtkNew<vtkMRMLModelNode> outputModelNode;
+  outputModelNode->SetAndObservePolyData(polydata);
+  vtkNew<vtkMRMLModelStorageNode> outputModelStorageNode;
+  outputModelStorageNode->SetFileName(outputModel.c_str());
+  if (!outputModelStorageNode->WriteData(outputModelNode))
+    {
+      std::cerr << "Failed to write output model file " << outputModel << std::endl;
+      return EXIT_FAILURE;
+    }
+  
+  return EXIT_SUCCESS;
+  
 }

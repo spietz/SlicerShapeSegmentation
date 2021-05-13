@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<executable>
+  <category>Surface Models</category>
+  <title>Auto Segmenter</title>
+  <description><![CDATA[Graph based segmentation of shapes using the "shape diameter function" and CGAL.]]></description>
+  <version>0.0.1</version>
+  <documentation-url>https://github.com/spietz/ShapeSegmentation</documentation-url>
+  <license>Slicer</license>
+  <contributor>Henrik Spietz</contributor>
+  <acknowledgements>This module is based on CGAL.</acknowledgements>
+  <parameters>
+
+    <label>IO</label>
+    <description><![CDATA[Input/output parameters]]></description>
+
+    <geometry type="model">
+      <name>inputModel</name>
+      <label>Input Model</label>
+      <channel>input</channel>
+      <index>0</index>
+      <description><![CDATA[Input model]]></description>
+    </geometry>
+
+    <geometry type="model">
+      <name>outputModel</name>
+      <label>Output Model</label>
+      <channel>output</channel>
+      <index>1</index>
+      <description><![CDATA[Output Model]]></description>
+    </geometry>
+
+    <label>Parameters</label>
+    <description><![CDATA[Algorithm parameters]]></description>
+
+    <double>
+      <name>smoothing_lambda</name>
+      <longflag>smoothing_lambda</longflag>
+      <flag>s</flag>
+      <label>Lambda</label>
+      <description><![CDATA[Smoothing factor]]></description>
+      <default>0.25</default>
+      <constraints>
+       <minimum>0.0</minimum>
+       <maximum>1.0</maximum>
+       <step>0.05</step>
+      </constraints>
+    </double>
+
+    <integer>
+      <name>num_clusters</name>
+      <longflag>num_clusters</longflag>
+      <flag>n</flag>
+      <label>Clusters</label>
+      <description><![CDATA[Number of distinct diameters ranges (number of clusters for Gaussian mixture model)]]></description>
+      <default>2</default>
+      <constraints>
+       <minimum>0</minimum>
+       <maximum>255</maximum>
+       <step>1</step>
+      </constraints>      
+    </integer>
+    
+  </parameters>
+</executable>
